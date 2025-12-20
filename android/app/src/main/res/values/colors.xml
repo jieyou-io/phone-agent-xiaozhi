@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="background_dark">#1A1A2E</color>
+    <color name="background_secondary">#16213E</color>
+    <color name="accent">#E94560</color>
+    <color name="accent_dark">#C73E54</color>
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#B0B0C0</color>
+    <color name="status_idle">#808080</color>
+    <color name="status_listening">#E94560</color>
+    <color name="status_thinking">#FFC107</color>
+    <color name="status_executing">#4CAF50</color>
+    <color name="status_error">#F44336</color>
+</resources>

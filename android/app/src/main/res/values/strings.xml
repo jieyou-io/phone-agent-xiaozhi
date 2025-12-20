@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">小智助手</string>
+    
+    <!-- Settings -->
+    <string name="settings_title">设置</string>
+    <string name="settings_model_section">模型接口配置</string>
+    <string name="settings_baidu_section">语音识别 (百度)</string>
+    
+    <!-- Model API -->
+    <string name="api_key_title">API Key</string>
+    <string name="base_url_title">Base URL</string>
+    <string name="model_name_title">模型名称</string>
+        
+    <!-- Baidu Speech -->
+    <string name="baidu_enable">启用百度语音识别</string>
+    <string name="baidu_app_id">App ID</string>
+    <string name="baidu_api_key">API Key</string>
+    <string name="baidu_secret_key">Secret Key</string>
+    <string name="baidu_help_text">请从百度AI开放平台获取 App ID、API Key 和 Secret Key</string>
+    
+    <!-- Action Delay -->
+    <string name="action_delay_title">操作延迟</string>
+    <string name="action_delay_desc">每个操作后的等待时间 (毫秒)</string>
+    
+    <!-- Buttons -->
+    <string name="save">保存</string>
+    <string name="cancel">取消</string>
+    
+    <!-- Errors -->
+    <string name="error_api_key_required">请输入 API Key</string>
+    <string name="error_baidu_config_required">请完整填写百度语音识别配置</string>
+    <string name="error_shizuku_required">需要 Shizuku 权限才能执行自动化任务</string>
+    
+    <!-- Status -->
+    <string name="status_idle">待命</string>
+    <string name="status_listening">听取中...</string>
+    <string name="status_thinking">思考中...</string>
+    <string name="status_executing">执行中...</string>
+    
+    <!-- Actions -->
+    <string name="start_voice">开始语音输入</string>
+    <string name="stop_voice">停止</string>
+    <string name="send_task">发送任务</string>
+    
+    <!-- Main Activity -->
+    <string name="settings">设置</string>
+    <string name="shizuku_not_running">Shizuku 未运行或无权限</string>
+    <string name="log_placeholder">日志将在这里显示...</string>
+    <string name="input_task_hint">输入任务指令</string>
+    <string name="send">发送</string>
+    <string name="start_voice_input">开始语音输入</string>
+    <string name="stop">停止</string>
+    
+    <!-- Overlay -->
+    <string name="executing_action">执行中...</string>
+    <string name="quick_input_hint">快速输入</string>
+    
+    <!-- Permissions -->
+    <string name="permission_audio_message">需要录音权限以使用语音输入功能</string>
+    <string name="overlay_permission_title">需要悬浮窗权限</string>
+    <string name="overlay_permission_message">请授予悬浮窗权限以显示快捷操作面板</string>
+    
+    <!-- Shizuku -->
+    <string name="shizuku_install_hint">请先安装并启动 Shizuku 服务</string>
+    <string name="shizuku_permission_denied">Shizuku 权限被拒绝</string>
+    <string name="shizuku_running">Shizuku 运行中 ✓</string>
+</resources>
+
