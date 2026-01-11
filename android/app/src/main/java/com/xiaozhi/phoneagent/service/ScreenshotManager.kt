@@ -76,12 +76,12 @@ class ScreenshotManager(private val context: Context) {
             null
         )
 
-        Log.d(TAG, "Screenshot manager initialized: ${screenWidth}x${screenHeight}")
+        Log.d(TAG, "截图管理器已初始化: ${screenWidth}x${screenHeight}")
     }
 
     suspend fun captureScreen(): Bitmap? = withContext(Dispatchers.IO) {
         if (!isReady || imageReader == null) {
-            Log.e(TAG, "Screenshot manager not ready")
+            Log.e(TAG, "截图管理器未就绪")
             return@withContext null
         }
 
@@ -97,13 +97,13 @@ class ScreenshotManager(private val context: Context) {
                 }
 
                 if (latestImage == null) {
-                    Log.w(TAG, "No image available in initial drain, waiting 150ms...")
+                    Log.w(TAG, "初次获取无图像，等待 150ms...")
                     Thread.sleep(150)
                     latestImage = imageReader?.acquireLatestImage()
                 }
 
                 if (latestImage == null) {
-                    Log.e(TAG, "Still no image available after wait")
+                    Log.e(TAG, "等待后仍无图像可用")
                     continuation.resume(null)
                 } else {
                     val bitmap = imageToBitmap(latestImage)
@@ -111,7 +111,7 @@ class ScreenshotManager(private val context: Context) {
                     continuation.resume(bitmap)
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Failed to capture screen", e)
+                Log.e(TAG, "截图失败", e)
                 continuation.resume(null)
             }
         }
@@ -147,7 +147,7 @@ class ScreenshotManager(private val context: Context) {
         imageReader = null
         mediaProjection = null
 
-        Log.d(TAG, "Screenshot manager released")
+        Log.d(TAG, "截图管理器已释放")
     }
 
     fun getScreenSize(): Pair<Int, Int> = Pair(screenWidth, screenHeight)
@@ -167,10 +167,10 @@ class ScreenshotManager(private val context: Context) {
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
             }
 
-            Log.d(TAG, "Screenshot saved: ${file.absolutePath}")
+            Log.d(TAG, "截图已保存: ${file.absolutePath}")
             file.absolutePath
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to save screenshot", e)
+            Log.e(TAG, "保存截图失败", e)
             null
         }
     }

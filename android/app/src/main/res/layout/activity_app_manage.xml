@@ -41,7 +41,7 @@
         android:text="添加应用"
         android:textColor="@android:color/white"
         android:backgroundTint="@color/accent"
-        android:theme="@style/Theme.MaterialComponents.Light" 
+        android:theme="@style/Theme.Material3.Light" 
         app:icon="@android:drawable/ic_input_add" xmlns:app="http://schemas.android.com/apk/res-auto"/>
 
 </LinearLayout>

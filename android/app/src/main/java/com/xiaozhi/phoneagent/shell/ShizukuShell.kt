@@ -27,7 +27,7 @@ object ShizukuShell {
         try {
             Shizuku.requestPermission(requestCode)
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to request permission", e)
+            Log.e(TAG, "请求权限失败", e)
         }
     }
 
@@ -55,7 +55,7 @@ object ShizukuShell {
                 error = stderr.trim()
             )
         } catch (e: Exception) {
-            Log.e(TAG, "Shell execution failed", e)
+            Log.e(TAG, "Shell 执行失败", e)
             ShellResult(false, "", e.message ?: "Unknown error")
         }
     }
@@ -73,7 +73,7 @@ object ShizukuShell {
             method.isAccessible = true
             method.invoke(null, command, null, null) as Process
         } catch (e: Exception) {
-            Log.w(TAG, "Reflection method failed, trying alternative", e)
+            Log.w(TAG, "反射方法失败，尝试替代方法", e)
             // Method 2: Fallback - this won't have elevated permissions but prevents crash
             Runtime.getRuntime().exec(command)
         }
@@ -112,19 +112,19 @@ object ShizukuShell {
         val currentIme = if (getCurrentImeResult.success) {
             getCurrentImeResult.output.trim()
         } else {
-            Log.w(TAG, "Failed to get current IME")
+            Log.w(TAG, "获取当前 IME 失败")
             null
         }
         
-        Log.d(TAG, "Current IME: $currentIme")
+        Log.d(TAG, "当前 IME: $currentIme")
         
         // Switch to ADB Keyboard (matching Python's detect_and_set_adb_keyboard)
         val adbKeyboardIme = "com.android.adbkeyboard/.AdbIME"
         if (currentIme != adbKeyboardIme) {
-            Log.d(TAG, "Switching to ADB Keyboard")
+            Log.d(TAG, "切换到 ADB 键盘")
             val switchResult = execute("ime set $adbKeyboardIme")
             if (!switchResult.success) {
-                Log.e(TAG, "Failed to switch to ADB Keyboard: ${switchResult.error}")
+                Log.e(TAG, "切换到 ADB 键盘失败: ${switchResult.error}")
                 return false
             }
             // Wait for IME to switch (Match Python's keyboard_switch_delay)
@@ -132,7 +132,7 @@ object ShizukuShell {
         }
 
         // Clear existing text (matching Python's clear_text)
-        Log.d(TAG, "Clearing existing text")
+        Log.d(TAG, "清除现有文本")
         execute("am broadcast -a ADB_CLEAR_TEXT")
         kotlinx.coroutines.delay(1000) // Match Python's text_clear_delay
 
@@ -143,16 +143,16 @@ object ShizukuShell {
         )
         
         val command = "am broadcast -a ADB_INPUT_B64 --es msg $encodedText"
-        Log.d(TAG, "Executing input command: $command")
+        Log.d(TAG, "执行输入命令: $command")
         
         val result = execute(command)
         kotlinx.coroutines.delay(1000) // Match Python's text_input_delay
         
-        Log.d(TAG, "Input result - success: ${result.success}, output: ${result.output}, error: ${result.error}")
+        Log.d(TAG, "输入结果 - success: ${result.success}, output: ${result.output}, error: ${result.error}")
         
         // Switch back to original IME if we changed it (matching Python's restore_keyboard)
         if (currentIme != null && currentIme != adbKeyboardIme) {
-            Log.d(TAG, "Switching back to original IME: $currentIme")
+            Log.d(TAG, "切换回原始 IME: $currentIme")
             kotlinx.coroutines.delay(1000) // Match Python's keyboard_restore_delay
             execute("ime set $currentIme")
         }
@@ -205,7 +205,7 @@ object ShizukuShell {
 
     suspend fun captureScreen(): android.graphics.Bitmap? = withContext(Dispatchers.IO) {
         if (!isAvailable || !hasPermission) {
-            Log.e(TAG, "Shizuku not available or permission denied for captureScreen")
+            Log.e(TAG, "Shizuku 不可用或权限被拒绝")
             return@withContext null
         }
 
@@ -219,11 +219,11 @@ object ShizukuShell {
             process.destroy()
             
             if (bitmap == null) {
-                Log.e(TAG, "Failed to decode bitmap from screencap output")
+                Log.e(TAG, "从 screencap 输出解码位图失败")
             }
             bitmap
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to capture screen via Shizuku", e)
+            Log.e(TAG, "通过 Shizuku 截图失败", e)
             null
         }
     }

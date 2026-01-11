@@ -3,6 +3,7 @@ package com.xiaozhi.phoneagent.speech
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.AudioFormat
 import android.media.AudioRecord
@@ -10,28 +11,24 @@ import android.media.MediaRecorder
 import android.util.Base64
 import android.util.Log
 import androidx.core.app.ActivityCompat
-import com.google.gson.Gson
+import com.xiaozhi.phoneagent.ui.LoginActivity
+import com.xiaozhi.phoneagent.utils.HttpClient
 import com.xiaozhi.phoneagent.utils.PrefsManager
 import kotlinx.coroutines.*
-import okhttp3.*
+import okhttp3.Request
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
-import java.io.IOException
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
 
 class BaiduSpeechManager(private val context: Context) {
     private var listener: SpeechListener? = null
     private val prefs = PrefsManager(context)
-    private val client = OkHttpClient()
-    private val gson = Gson()
+    private val client = HttpClient.get()
     private var isRecording = false
     private var recordJob: Job? = null
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    private var accessToken: String? = null
-    private var tokenExpireTime: Long = 0
+    private var isRedirectingToLogin = false
 
     interface SpeechListener {
         fun onReady()
@@ -43,7 +40,7 @@ class BaiduSpeechManager(private val context: Context) {
 
     fun initialize(): Boolean {
         if (!prefs.isBaiduSpeechConfigured) {
-            Log.w(TAG, "Baidu Speech not configured")
+            Log.w(TAG, "百度语音未配置")
             return false
         }
         return true
@@ -68,7 +65,7 @@ class BaiduSpeechManager(private val context: Context) {
             try {
                 recordAndRecognize()
             } catch (e: Exception) {
-                Log.e(TAG, "Recording error", e)
+                Log.e(TAG, "录音错误", e)
                 withContext(Dispatchers.Main) {
                     listener?.onError(-1, e.message ?: "Unknown error")
                 }
@@ -110,7 +107,7 @@ class BaiduSpeechManager(private val context: Context) {
         }
 
         recorder.startRecording()
-        Log.d(TAG, "Started recording")
+        Log.d(TAG, "开始录音")
 
         val audioData = ByteArrayOutputStream()
         val buffer = ByteArray(bufferSize)
@@ -133,7 +130,7 @@ class BaiduSpeechManager(private val context: Context) {
         } finally {
             recorder.stop()
             recorder.release()
-            Log.d(TAG, "Stopped recording, data size: ${audioData.size()}")
+            Log.d(TAG, "停止录音，数据大小: ${audioData.size()}")
         }
 
         val pcmData = audioData.toByteArray()
@@ -151,24 +148,29 @@ class BaiduSpeechManager(private val context: Context) {
     }
 
     private suspend fun recognizeAudio(pcmData: ByteArray) {
-        val token = getAccessToken() ?: return
-        
-        Log.d(TAG, "Uploading audio, size: ${pcmData.size} bytes")
+        val backendUrl = prefs.backendUrl.trim().trimEnd('/')
+
+        Log.d(TAG, "上传音频，大小: ${pcmData.size} 字节")
+
+        if (backendUrl.isEmpty()) {
+            withContext(Dispatchers.Main) {
+                listener?.onError(-1, "Backend URL missing")
+            }
+            return
+        }
 
         val speech = Base64.encodeToString(pcmData, Base64.NO_WRAP)
         val json = JSONObject().apply {
+            put("device_id", prefs.deviceId)
+            put("audio", speech)
             put("format", "pcm")
             put("rate", 16000)
-            put("dev_pid", 1537)
             put("channel", 1)
-            put("token", token)
-            put("cuid", "com.xiaozhi.phoneagent")
-            put("len", pcmData.size)
-            put("speech", speech)
+            put("dev_pid", 1537)
         }
 
         val request = Request.Builder()
-            .url(ASR_URL)
+            .url("$backendUrl/api/baidu-speech/recognize")
             .post(json.toString().toRequestBody("application/json".toMediaType()))
             .build()
 
@@ -178,102 +180,70 @@ class BaiduSpeechManager(private val context: Context) {
             }
 
             if (!response.isSuccessful) {
-                val errorMsg = "HTTP Error: ${response.code}"
+                val code = response.code
+                val body = response.body?.string()
+                val detail = body?.let {
+                    runCatching { JSONObject(it).optString("detail") }.getOrNull()
+                }
+                val errorMsg = detail?.ifBlank { null } ?: "HTTP Error: $code"
+
+                if (code == 401 || code == 403) {
+                    handleAuthExpired(errorMsg)
+                    return
+                }
+
                 Log.e(TAG, errorMsg)
                 withContext(Dispatchers.Main) {
-                    listener?.onError(response.code, errorMsg)
+                    listener?.onError(code, errorMsg)
                 }
                 return
             }
 
-            val responseBody = response.body?.string()
-            Log.d(TAG, "ASR Response: $responseBody")
+            val responseBody = response.body?.string().orEmpty()
+            Log.d(TAG, "后端 ASR 响应: $responseBody")
 
-            if (responseBody != null) {
-                val jsonResponse = JSONObject(responseBody)
-                val errNo = jsonResponse.optInt("err_no", -1)
-                
-                withContext(Dispatchers.Main) {
-                    if (errNo == 0) {
-                        val result = jsonResponse.optJSONArray("result")?.optString(0)
-                        if (!result.isNullOrEmpty()) {
-                            listener?.onResult(result)
-                        } else {
-                            listener?.onError(0, "Empty result")
-                        }
-                    } else {
-                        val errMsg = jsonResponse.optString("err_msg", "Unknown error")
-                        listener?.onError(errNo, errMsg)
-                    }
+            val jsonResponse = JSONObject(responseBody)
+            val result = jsonResponse.optString("result")
+
+            withContext(Dispatchers.Main) {
+                if (!result.isNullOrEmpty()) {
+                    listener?.onResult(result)
+                } else {
+                    listener?.onError(0, "Empty result")
                 }
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Network error", e)
+            Log.e(TAG, "网络错误", e)
+            val errorMsg = when {
+                e is java.net.SocketTimeoutException -> "连接超时，请检查后端服务是否启动"
+                e.message?.contains("Failed to connect") == true -> "无法连接后端，请检查服务器地址"
+                else -> "Network error: ${e.message}"
+            }
             withContext(Dispatchers.Main) {
-                listener?.onError(-1, "Network error: ${e.message}")
+                listener?.onError(-1, errorMsg)
             }
         }
     }
 
-    private suspend fun getAccessToken(): String? {
-        if (accessToken != null && System.currentTimeMillis() < tokenExpireTime) {
-            return accessToken
+    private suspend fun handleAuthExpired(message: String) {
+        if (isRedirectingToLogin) {
+            Log.d(TAG, "已在跳转登录，跳过重复操作")
+            return
         }
-
-        val apiKey = prefs.baiduApiKey
-        val secretKey = prefs.baiduSecretKey
-        
-        if (apiKey.isNullOrEmpty() || secretKey.isNullOrEmpty()) {
-            withContext(Dispatchers.Main) {
-                listener?.onError(-1, "API Key or Secret missing")
+        isRedirectingToLogin = true
+        Log.w(TAG, "语音识别期间会话过期，跳转到登录")
+        HttpClient.clearCookies()
+        withContext(Dispatchers.Main) {
+            listener?.onError(401, message)
+            val intent = Intent(context, LoginActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
-            return null
-        }
-
-        val url = "$TOKEN_URL?grant_type=client_credentials&client_id=$apiKey&client_secret=$secretKey"
-        val request = Request.Builder().url(url).build()
-
-        return try {
-            val response = withContext(Dispatchers.IO) {
-                client.newCall(request).execute()
-            }
-            
-            val body = response.body?.string()
-            if (response.isSuccessful && body != null) {
-                val json = JSONObject(body)
-                if (json.has("access_token")) {
-                    accessToken = json.getString("access_token")
-                    val expiresIn = json.optLong("expires_in", 2592000) // Default 30 days
-                    tokenExpireTime = System.currentTimeMillis() + (expiresIn * 1000) - 60000 // Buffer 1 min
-                    Log.d(TAG, "Token refreshed")
-                    accessToken
-                } else {
-                    Log.e(TAG, "Token error: $body")
-                    withContext(Dispatchers.Main) {
-                        listener?.onError(-1, "Auth failed: $body")
-                    }
-                    null
-                }
-            } else {
-                Log.e(TAG, "Token HTTP error: ${response.code}")
-                 withContext(Dispatchers.Main) {
-                    listener?.onError(response.code, "Token HTTP error")
-                }
-                null
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Token network error", e)
-             withContext(Dispatchers.Main) {
-                listener?.onError(-1, "Token network error: ${e.message}")
-            }
-            null
+            context.startActivity(intent)
         }
     }
 
     companion object {
         private const val TAG = "BaiduSpeechManager"
         private const val SAMPLE_RATE = 16000
-        private const val TOKEN_URL = "https://aip.baidubce.com/oauth/2.0/token"
-        private const val ASR_URL = "http://vop.baidu.com/server_api"
     }
 }

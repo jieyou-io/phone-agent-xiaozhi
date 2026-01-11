@@ -2,28 +2,18 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- 网络权限 -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-
-    <!-- 语音识别权限 -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
-
-    <!-- 前台服务权限 -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
-
-    <!-- 悬浮窗权限 -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-
-    <!-- 震动反馈 -->
     <uses-permission android:name="android.permission.VIBRATE" />
-
-    <!-- 查询所有应用 (用于应用管理) -->
-    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" 
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
         tools:ignore="QueryAllPackagesPermission" />
 
     <application
+        android:name=".PhoneAgentApplication"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
@@ -34,10 +24,15 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="34">
 
-        <!-- 主界面 -->
+        <activity
+            android:name=".ui.LoginActivity"
+            android:exported="false"
+            android:theme="@style/Theme.PhoneAgent" />
+
         <activity
             android:name=".ui.MainActivity"
             android:exported="true"
+            android:launchMode="singleTop"
             android:theme="@style/Theme.PhoneAgent">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -45,27 +40,18 @@
             </intent-filter>
         </activity>
 
-        <!-- 设置界面 -->
-        <activity
-            android:name=".ui.SettingsActivity"
-            android:exported="false"
-            android:theme="@style/Theme.PhoneAgent" />
-
-        <!-- 应用管理界面 -->
         <activity
             android:name=".ui.AppManageActivity"
             android:exported="false"
             android:label="应用管理"
             android:theme="@style/Theme.PhoneAgent" />
 
-        <!-- 应用选择界面 -->
         <activity
             android:name=".ui.AppPickerActivity"
             android:exported="false"
             android:label="选择应用"
             android:theme="@style/Theme.PhoneAgent" />
 
-        <!-- 自动化服务 -->
         <service
             android:name=".service.AutomationService"
             android:exported="false"
@@ -75,7 +61,6 @@
                 android:value="automation" />
         </service>
 
-        <!-- 悬浮窗服务 -->
         <service
             android:name=".service.OverlayService"
             android:exported="false"
@@ -85,7 +70,6 @@
                 android:value="overlay" />
         </service>
 
-        <!-- Shizuku Provider -->
         <provider
             android:name="rikka.shizuku.ShizukuProvider"
             android:authorities="${applicationId}.shizuku"

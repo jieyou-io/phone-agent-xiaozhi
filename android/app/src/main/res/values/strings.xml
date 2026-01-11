@@ -1,17 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">小智助手</string>
-    
+
+    <!-- Login -->
+    <string name="login_title">登录</string>
+    <string name="login_server_address">服务器地址</string>
+    <string name="login_username">用户名</string>
+    <string name="login_password">密码</string>
+    <string name="login_button">登录</string>
+    <string name="login_success">登录成功</string>
+    <string name="error_server_address_required">请输入服务器地址</string>
+    <string name="error_credentials_required">请输入用户名和密码</string>
+    <string name="error_connection_failed">连接失败: %1$s</string>
+    <string name="error_login_failed">登录失败</string>
+
     <!-- Settings -->
     <string name="settings_title">设置</string>
-    <string name="settings_model_section">模型接口配置</string>
-    <string name="settings_baidu_section">语音识别 (百度)</string>
+    <string name="settings_app_management_section">应用管理</string>
+    <string name="settings_app_management_desc">设置助手支持操作的应用列表</string>
+    <string name="manage_apps_button">管理支持的应用</string>
+    <string name="settings_voice_section">语音设置</string>
+    <string name="settings_display_behavior_section">系统与显示</string>
+    <string name="auto_send_voice_title">语音直接发送</string>
+    <string name="overlay_enable_title">显示悬浮球</string>
+    <string name="overlay_enable_desc">关闭后将不显示状态悬浮球</string>
     
     <!-- Model API -->
     <string name="api_key_title">API Key</string>
     <string name="base_url_title">Base URL</string>
     <string name="model_name_title">模型名称</string>
-        
+    <string name="model_base_url_hint">例如: https://api.openai.com/v1</string>
+    <string name="model_api_key_hint">输入 API Key</string>
+    <string name="model_name_hint">例如: gpt-4</string>
+    <string name="model_config_title">模型配置</string>
+    <string name="save_model_config">保存配置</string>
+
+    <!-- Manager Model -->
+    <string name="manager_model_title">规划模型 (可选)</string>
+    <string name="manager_model_desc">留空则使用默认模型，用于智能任务规划</string>
+    <string name="manager_base_url_hint">例如: https://api.openai.com/v1</string>
+    <string name="manager_api_key_hint">输入 API Key</string>
+    <string name="manager_model_name_hint">例如: gpt-4o-mini</string>
+    <string name="save_manager_model_config">保存规划模型配置</string>
+
     <!-- Baidu Speech -->
     <string name="baidu_enable">启用百度语音识别</string>
     <string name="baidu_app_id">App ID</string>
@@ -26,12 +57,26 @@
     <!-- Buttons -->
     <string name="save">保存</string>
     <string name="cancel">取消</string>
-    
+    <string name="confirm">确定</string>
+    <string name="sync_to_backend">同步到后台</string>
+    <string name="save_local_settings">保存基础设置</string>
+
     <!-- Errors -->
-    <string name="error_api_key_required">请输入 API Key</string>
+    <string name="error_api_key_required">请先配置模型信息</string>
     <string name="error_baidu_config_required">请完整填写百度语音识别配置</string>
+    <string name="error_manager_config_required">请完整填写管家模型配置</string>
     <string name="error_shizuku_required">需要 Shizuku 权限才能执行自动化任务</string>
-    
+    <string name="error_backend_url_empty">后端地址为空</string>
+    <string name="error_connection_timeout">连接超时，请检查后端服务是否启动</string>
+    <string name="error_manager_base_url_required">请输入规划模型 Base URL</string>
+    <string name="error_manager_api_key_required">请输入规划模型 API Key</string>
+    <string name="error_manager_model_name_required">请输入规划模型名称</string>
+
+    <!-- Success Messages -->
+    <string name="manager_model_saved">规划模型配置已保存并同步到后台</string>
+    <string name="manager_model_cleared">规划模型配置已清除</string>
+    <string name="manager_model_cleared_local">规划模型配置已清除 (仅本地)</string>
+
     <!-- Status -->
     <string name="status_idle">待命</string>
     <string name="status_listening">听取中...</string>
@@ -65,5 +110,38 @@
     <string name="shizuku_install_hint">请先安装并启动 Shizuku 服务</string>
     <string name="shizuku_permission_denied">Shizuku 权限被拒绝</string>
     <string name="shizuku_running">Shizuku 运行中 ✓</string>
-</resources>
+    <string name="nav_home">主页</string>
+    <string name="nav_skills">扩展</string>
+    <string name="nav_settings">设置</string>
+    <string name="skills_title">扩展技能</string>
+    <string name="add_skill">新增技能</string>
+    <string name="delete">删除</string>
+    <string name="skill_configure">模型设置</string>
+    <string name="skill_id">技能 ID</string>
+    <string name="skill_name">技能名称</string>
+    <string name="skill_description">技能描述</string>
+    <string name="skill_json">技能 JSON</string>
+    <string name="skill_json_invalid">技能 JSON 无效</string>
+    <string name="skill_prompt">主提示词</string>
+    <string name="model_base_url">模型 Base URL</string>
+    <string name="model_api_key">模型 API Key</string>
+    <string name="model_name">模型名称</string>
+    <string name="sub_skills">子技能</string>
+    <string name="add_sub_skill">添加子技能</string>
+    <string name="sub_skill_name">子技能名称</string>
+    <string name="sub_skill_prompt">子技能提示词</string>
+    <string name="skill_form_invalid">请填写技能名称、描述与主提示词</string>
+    <string name="skill_model_title">技能模型 - %1$s</string>
+    <string name="clear">清除</string>
+    <string name="skill_sync_failed">技能同步失败，已保存在本地</string>
+    <string name="skill_delete_sync_failed">技能删除同步失败</string>
+    <string name="manager_sync_failed">管家模型同步失败</string>
 
+    <!-- App Management -->
+    <string name="app_manage_title">管理支持的应用</string>
+    <string name="app_manage_search_hint">搜索应用</string>
+    <string name="app_manage_show_system">显示系统应用</string>
+    <string name="app_manage_supported_count">已选择 %1$d 个应用</string>
+    <string name="app_manage_no_apps">未找到应用</string>
+
+</resources>

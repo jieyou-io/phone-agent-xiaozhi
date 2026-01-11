@@ -94,7 +94,7 @@ class OverlayService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        Log.d(TAG, "onCreate: initializing OverlayService")
+        Log.d(TAG, "初始化 OverlayService")
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
         
         // 获取屏幕尺寸
@@ -110,13 +110,13 @@ class OverlayService : Service() {
         }
         registerReceiver()
         observeStatusFlow()
-        Log.d(TAG, "onCreate: service initialized, canDrawOverlays=${Settings.canDrawOverlays(this)}")
+        Log.d(TAG, "服务已初始化, canDrawOverlays=${Settings.canDrawOverlays(this)}")
     }
 
     private fun observeStatusFlow() {
         serviceScope.launch {
             AutomationService.statusFlow.collect { status ->
-                Log.d(TAG, "StatusFlow update: $status")
+                Log.d(TAG, "状态流更新: $status")
                 updateStatus(status)
             }
         }
@@ -136,21 +136,21 @@ class OverlayService : Service() {
     @SuppressLint("ClickableViewAccessibility")
     private fun showBubble() {
         if (bubbleView != null) {
-            Log.d(TAG, "Bubble already exists")
+            Log.d(TAG, "浮窗已存在")
             return
         }
 
         if (!com.xiaozhi.phoneagent.utils.PrefsManager(this).showOverlay) {
-            Log.d(TAG, "Overlay disabled in settings, skipping showBubble")
+            Log.d(TAG, "设置中已禁用浮窗，跳过 showBubble")
             return
         }
 
         if (!Settings.canDrawOverlays(this)) {
-            Log.e(TAG, "Overlay permission not granted")
+            Log.e(TAG, "浮窗权限未授予")
             return
         }
 
-        Log.d(TAG, "Creating bubble view")
+        Log.d(TAG, "创建浮窗视图")
         bubbleBinding = OverlayBubbleBinding.inflate(LayoutInflater.from(this))
         bubbleView = bubbleBinding?.root
 
@@ -225,11 +225,11 @@ class OverlayService : Service() {
 
         try {
             windowManager.addView(bubbleView, params)
-            Log.d(TAG, "Bubble view added successfully")
+            Log.d(TAG, "浮窗视图添加成功")
             updateStatus(currentStatus)
             scheduleRetraction()
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to add bubble view", e)
+            Log.e(TAG, "添加浮窗视图失败", e)
             try { windowManager.removeView(bubbleView) } catch (_: Exception) { }
             bubbleView = null
             bubbleBinding = null
@@ -252,7 +252,7 @@ class OverlayService : Service() {
     private fun temporaryHideBubble() {
         if (isTemporarilyHidden) return
         
-        Log.d(TAG, "Physically removing bubble and panel for screenshot")
+        Log.d(TAG, "为截图物理移除浮窗和面板")
         hideKeyboard()
         hidePanel()
         
@@ -260,7 +260,7 @@ class OverlayService : Service() {
             try {
                 windowManager.removeView(it)
             } catch (e: Exception) {
-                Log.e(TAG, "Error removing bubble for temp hide", e)
+                Log.e(TAG, "临时隐藏时移除浮窗错误", e)
             }
         }
         isTemporarilyHidden = true
@@ -268,12 +268,12 @@ class OverlayService : Service() {
 
     private fun temporaryShowBubble() {
         if (bubbleView != null && isTemporarilyHidden) {
-            Log.d(TAG, "Restoring bubble after screenshot")
+            Log.d(TAG, "截图后恢复浮窗")
             try {
                 windowManager.addView(bubbleView, bubbleParams)
                 updateStatus(currentStatus)
             } catch (e: Exception) {
-                Log.e(TAG, "Error restoring bubble: ${e.message}")
+                Log.e(TAG, "恢复浮窗错误: ${e.message}")
             }
             isTemporarilyHidden = false
         }
@@ -366,7 +366,7 @@ class OverlayService : Service() {
             try {
                 windowManager.removeView(it)
             } catch (e: Exception) {
-                Log.w(TAG, "Panel already removed or not attached")
+                Log.w(TAG, "面板已移除或未附加")
             }
         }
         panelView = null
@@ -501,7 +501,7 @@ class OverlayService : Service() {
                         try {
                             windowManager.updateViewLayout(view, params)
                         } catch (e: Exception) {
-                            Log.e(TAG, "Error updating view layout", e)
+                            Log.e(TAG, "更新视图布局错误", e)
                             cancel()
                         }
                     }
@@ -509,7 +509,7 @@ class OverlayService : Service() {
                 }
                 
                 isEdgeHidden = true
-                Log.d(TAG, "Hiding bubble to edge: targetX=$targetX, isLeft=$isNearLeftEdge")
+                Log.d(TAG, "隐藏浮窗到边缘: targetX=$targetX, isLeft=$isNearLeftEdge")
             }
         }
     }
@@ -544,7 +544,7 @@ class OverlayService : Service() {
                         try {
                             windowManager.updateViewLayout(view, params)
                         } catch (e: Exception) {
-                            Log.e(TAG, "Error updating view layout", e)
+                            Log.e(TAG, "更新视图布局错误", e)
                             cancel()
                         }
                     }
@@ -552,7 +552,7 @@ class OverlayService : Service() {
                 }
                 
                 isEdgeHidden = false
-                Log.d(TAG, "Showing bubble from edge: targetX=$targetX")
+                Log.d(TAG, "从边缘显示浮窗: targetX=$targetX")
             }
         }
     }
@@ -616,7 +616,7 @@ class OverlayService : Service() {
 
         fun show(context: Context) {
             if (!Settings.canDrawOverlays(context)) {
-                Log.e(TAG, "Cannot show overlay: permission not granted")
+                Log.e(TAG, "无法显示浮窗: 权限未授予")
                 return
             }
             val intent = Intent(context, OverlayService::class.java).apply {
